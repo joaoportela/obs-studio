@@ -276,7 +276,8 @@ int main(int argc, char **argv) {
 		// declared in "main" scope, so that they are not disposed too soon.
 		OBSSource video_source, audio_source;
 
-		video_source = setup_video_input(cli_options.monitor_to_record);
+		MonitorInfo monitor = monitor_at_index(cli_options.monitor_to_record);
+		video_source = setup_video_input(monitor);
 		if (!cli_options.audio_device.empty()){
 			audio_source = setup_audio_input(cli_options.audio_device);
 			if (!audio_source){

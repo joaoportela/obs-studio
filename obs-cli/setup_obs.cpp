@@ -2,6 +2,13 @@
 
 #include<boost/algorithm/string/predicate.hpp>
 
+#define do_log(level, format, ...) \
+	blog(level, "[setup_obs.cpp] " format, ##__VA_ARGS__)
+
+#define warn(format, ...)  do_log(LOG_WARNING, format, ##__VA_ARGS__)
+#define info(format, ...)  do_log(LOG_INFO,    format, ##__VA_ARGS__)
+#define debug(format, ...) do_log(LOG_DEBUG,   format, ##__VA_ARGS__)
+
 #ifdef __APPLE__
 #define INPUT_AUDIO_SOURCE  "coreaudio_input_capture"
 #define OUTPUT_AUDIO_SOURCE "coreaudio_output_capture"
@@ -13,13 +20,52 @@
 #define OUTPUT_AUDIO_SOURCE "pulse_output_capture"
 #endif
 
-OBSSource setup_video_input(int monitor) {
-	std::string name("monitor " + std::to_string(monitor) + " capture");
+#include<iostream>
+
+namespace {
+	int find_monitor_idx(MonitorInfo monitor) {
+		// find matching monitor index for capture module that is used.
+		// this is an hack and may break with different versions of the
+		// "monitor_capture" module.
+		struct gs_monitor_info info;
+
+		obs_enter_graphics();
+
+		int monitor_idx = -1;
+		for (int idx = 0; true; idx++) {
+			if (!gs_get_duplicator_monitor_info(idx, &info)){
+				// failed to find monitor index.
+				monitor_idx = -1;
+				break;
+			}
+			if (info.cx == monitor.width
+				&& info.cy == monitor.height
+				&& info.x == monitor.left
+				&& info.y == monitor.top) {
+				// found monitor index
+				monitor_idx = idx;
+				break;
+			}
+		}
+
+		obs_leave_graphics();
+
+		info("monitor %dx%d @ %d,%d index %d changed to %d to match internal indexes.",
+			info.cx, info.cy, info.x, info.y, monitor.monitor_id, monitor_idx);
+
+		return monitor_idx;
+	}
+}
+
+OBSSource setup_video_input(MonitorInfo monitor) {
+	int monitor_idx = find_monitor_idx(monitor);
+
+	std::string name("monitor " + std::to_string(monitor_idx) + " capture");
 	OBSSource source = obs_source_create("monitor_capture", name.c_str(), nullptr, nullptr);
-	
+
 	{
 		obs_data_t * source_settings = obs_data_create();
-		obs_data_set_int(source_settings, "monitor", monitor);
+		obs_data_set_int(source_settings, "monitor", monitor_idx);
 		obs_data_set_bool(source_settings, "capture_cursor", false);
 
 		obs_source_update(source, source_settings);
@@ -31,6 +77,7 @@ OBSSource setup_video_input(int monitor) {
 	obs_source_release(source);
 	return source;
 }
+
 std::string search_audio_device_by_type(std::string* audio_device, std::string* device_type){
 
 	std::string device_id;

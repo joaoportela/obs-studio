@@ -23,6 +23,8 @@
 #include<string>
 #include<obs.hpp>
 
+#include "monitor_info.hpp"
+
 struct Outputs {
 	OBSEncoder video_encoder;
 	OBSEncoder audio_encoder;
@@ -32,7 +34,7 @@ struct Outputs {
 /**
  * Setup input to capture monitor \p monitor.
  */
-OBSSource setup_video_input(int monitor);
+OBSSource setup_video_input(MonitorInfo monitor);
 
 /**
 * Setup input to capture audio.
