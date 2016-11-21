@@ -51,9 +51,10 @@ bool detect_monitors() {
 
 void print_monitors_info() {
 	for (auto monitor : all_monitors) {
-		std::cout << "Monitor: " << monitor.monitor_id << " "
+		std::cout << "Monitor " << monitor.monitor_id << ": "
 			<< "" << monitor.width << "x"
 			<< "" << monitor.height << " "
+			<< "@ " << monitor.left << "," << monitor.top
 			<< std::endl;
 	}
 }
