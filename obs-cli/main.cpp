@@ -30,6 +30,13 @@
 #include"setup_obs.hpp"
 #include"event_loop.hpp"
 
+#define do_log(level, format, ...) \
+	blog(level, "[main] " format, ##__VA_ARGS__)
+
+#define warn(format, ...)  do_log(LOG_WARNING, format, ##__VA_ARGS__)
+#define info(format, ...)  do_log(LOG_INFO,    format, ##__VA_ARGS__)
+#define debug(format, ...) do_log(LOG_DEBUG,   format, ##__VA_ARGS__)
+
 namespace {
 	namespace Ret {
 		enum ENUM : int {
@@ -168,6 +175,21 @@ bool do_print_lists() {
 
 
 int parse_args(int argc, char **argv) {
+	// print args to log
+	std::ostringstream args;
+	for (int i = 0; i < argc; i++)
+	{
+		std::string arg = std::string(argv[i]);
+		if (arg.find(' ') != std::string::npos) {
+			args << "\"" << arg << "\" ";
+		}
+		else {
+			args << arg << " ";
+		}
+	}
+	debug("%s", args.str().c_str());
+
+
 	namespace po = boost::program_options;
 
 	// Declare the supported options.
