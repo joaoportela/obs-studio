@@ -231,7 +231,22 @@ struct OBSStudioAPI : obs_frontend_callbacks {
 
 	bool obs_frontend_recording_active(void) override
 	{
-		return main->outputHandler->StreamingActive();
+		return main->outputHandler->RecordingActive();
+	}
+
+	void obs_frontend_replay_buffer_start(void) override
+	{
+		QMetaObject::invokeMethod(main, "StartReplayBuffer");
+	}
+
+	void obs_frontend_replay_buffer_stop(void) override
+	{
+		QMetaObject::invokeMethod(main, "StopReplayBuffer");
+	}
+
+	bool obs_frontend_replay_buffer_active(void) override
+	{
+		return main->outputHandler->ReplayBufferActive();
 	}
 
 	void *obs_frontend_add_tools_menu_qaction(const char *name) override
@@ -282,6 +297,13 @@ struct OBSStudioAPI : obs_frontend_callbacks {
 	obs_output_t *obs_frontend_get_recording_output(void) override
 	{
 		OBSOutput out = main->outputHandler->fileOutput;
+		obs_output_addref(out);
+		return out;
+	}
+
+	obs_output_t *obs_frontend_get_replay_buffer_output(void) override
+	{
+		OBSOutput out = main->outputHandler->replayBuffer;
 		obs_output_addref(out);
 		return out;
 	}

@@ -151,7 +151,6 @@ static void image_source_render(void *data, gs_effect_t *effect)
 	if (!context->image.texture)
 		return;
 
-	gs_reset_blend_state();
 	gs_effect_set_texture(gs_effect_get_param_by_name(effect, "image"),
 			context->image.texture);
 	gs_draw_sprite(context->image.texture, 0,
@@ -207,7 +206,7 @@ static void image_source_tick(void *data, float seconds)
 		time_t t = get_modified_timestamp(context->file);
 		context->update_time_elapsed = 0.0f;
 
-		if (context->file_timestamp < t) {
+		if (context->file_timestamp != t) {
 			image_source_load(context);
 		}
 	}

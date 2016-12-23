@@ -111,6 +111,7 @@ private:
 	QString curPreset;
 	QString curQSVPreset;
 	QString curNVENCPreset;
+	QString curAMDPreset;
 
 	QString curAdvStreamEncoder;
 	QString curAdvRecordEncoder;
@@ -288,6 +289,8 @@ private slots:
 	void SimpleRecordingQualityChanged();
 	void SimpleRecordingEncoderChanged();
 	void SimpleRecordingQualityLosslessWarning(int idx);
+
+	void SimpleReplayBufferChanged();
 
 	void SimpleStreamingEncoderChanged();
 
