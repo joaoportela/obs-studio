@@ -3,6 +3,8 @@
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE("frontend-tools", "en-US")
 
+#include "obs-frontend-api.h"
+
 #if defined(_WIN32) || defined(__APPLE__)
 void InitSceneSwitcher();
 void FreeSceneSwitcher();
@@ -12,6 +14,11 @@ void FreeOutputTimer();
 
 bool obs_module_load(void)
 {
+	if (obs_frontend_get_main_window() == NULL) {
+		// we have no frontend. this module is not needed.
+		return false;
+	}
+
 #if defined(_WIN32) || defined(__APPLE__)
 	InitSceneSwitcher();
 #endif
