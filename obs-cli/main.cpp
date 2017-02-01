@@ -51,12 +51,14 @@ namespace {
 		// default values
 		static const std::string default_encoder;
 		static const int default_video_bitrate = 2500;
+		static const int default_fps = 60;
 
 		// cli options
 		int monitor_to_record = 0;
 		std::string encoder;
 		std::string audio_device;
 		int video_bitrate = 2500;
+		int fps = 60;
 		std::vector<std::string> outputs_paths;
 		bool show_help = false;
 		bool list_monitors = false;
@@ -73,10 +75,10 @@ namespace {
 *
 *   Calls obs_reset_video internally. Assumes some video options.
 */
-void reset_video(int monitor_index) {
+void reset_video(int monitor_index, int fps) {
 	struct obs_video_info ovi;
 
-	ovi.fps_num = 60;
+	ovi.fps_num = fps;
 	ovi.fps_den = 1;
 
 	MonitorInfo monitor = monitor_at_index(monitor_index);
@@ -205,6 +207,7 @@ int parse_args(int argc, char **argv) {
 		("audio,a", po::value<std::string>(&cli_options.audio_device)->default_value("")->implicit_value("default"), "set audio to be recorded (default to mic) -a\"device_name\" ")
 		("encoder,e", po::value<std::string>(&cli_options.encoder)->default_value(CliOptions::default_encoder), "set encoder")
 		("vbitrate,v", po::value<int>(&cli_options.video_bitrate)->default_value(CliOptions::default_video_bitrate), "set video bitrate. suggested values: 1200 for low, 2500 for medium, 5000 for high")
+		("fps", po::value<int>(&cli_options.fps)->default_value(CliOptions::default_fps), "set capture fps.")
 		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths)->required(), "set file destination, can be set multiple times for multiple outputs")
 		;
 
@@ -287,7 +290,7 @@ int main(int argc, char **argv) {
 		}
 
 		// resets must be called before loading modules.
-		reset_video(cli_options.monitor_to_record);
+		reset_video(cli_options.monitor_to_record, cli_options.fps);
 		reset_audio();
 		obs_load_all_modules();
 
