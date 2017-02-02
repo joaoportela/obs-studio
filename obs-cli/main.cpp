@@ -50,17 +50,19 @@ namespace {
 	struct CliOptions {
 		// default values
 		static const std::string default_encoder;
-		static const int default_video_bitrate = 2500;
-		static const int default_fps = 60;
+		static const int default_video_bitrate;
+		static const int default_video_cqp;
+		static const int default_fps;
 		static const std::string default_rate_control;
 
 		// cli options
 		int monitor_to_record = 0;
 		std::string encoder;
 		std::string audio_device;
-		int video_bitrate = 2500;
-		int fps = 60;
 		std::string rate_control;
+		int video_bitrate;
+		int video_cqp;
+		int fps;
 		std::vector<std::string> outputs_paths;
 		bool show_help = false;
 		bool list_monitors = false;
@@ -70,6 +72,9 @@ namespace {
 		bool list_outputs = false;
 	} cli_options;
 	const std::string CliOptions::default_encoder = "obs_x264";
+	const int CliOptions::default_video_bitrate = 2500;
+	const int CliOptions::default_video_cqp = 23;
+	const int CliOptions::default_fps = 60;
 	const std::string CliOptions::default_rate_control = "CBR";
 } // namespace
 
@@ -209,8 +214,9 @@ int parse_args(int argc, char **argv) {
 		("monitor,m", po::value<int>(&cli_options.monitor_to_record)->required(), "set monitor to be recorded")
 		("audio,a", po::value<std::string>(&cli_options.audio_device)->default_value("")->implicit_value("default"), "set audio to be recorded (default to mic) -a\"device_name\" ")
 		("encoder,e", po::value<std::string>(&cli_options.encoder)->default_value(CliOptions::default_encoder), "set encoder")
-		("vbitrate,v", po::value<int>(&cli_options.video_bitrate)->default_value(CliOptions::default_video_bitrate), "set video bitrate. suggested values: 1200 for low, 2500 for medium, 5000 for high")
 		("ratecontrol", po::value<std::string>(&cli_options.rate_control)->default_value(CliOptions::default_rate_control), "set rate control.")
+		("bitrate", po::value<int>(&cli_options.video_bitrate)->default_value(CliOptions::default_video_bitrate), "set video bitrate for rate controls that need it (CBR, VBR). suggested values for HD: 1200 for low, 2500 for medium, 5000 for high")
+		("cqp", po::value<int>(&cli_options.video_cqp)->default_value(CliOptions::default_video_cqp), "set video cqp parameter for CQP rate control.")
 		("fps", po::value<int>(&cli_options.fps)->default_value(CliOptions::default_fps), "set capture fps.")
 		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths)->required(), "set file destination, can be set multiple times for multiple outputs")
 		;
@@ -314,7 +320,7 @@ int main(int argc, char **argv) {
 			}
 		}
 		// Also declared in "main" scope. While the outputs are kept in scope, we will continue recording.
-		Outputs output = setup_outputs(cli_options.encoder, cli_options.video_bitrate, cli_options.rate_control, cli_options.outputs_paths);
+		Outputs output = setup_outputs(cli_options.encoder, cli_options.rate_control, cli_options.video_bitrate, cli_options.video_cqp, cli_options.outputs_paths);
 
 		EventLoop loop;
 
