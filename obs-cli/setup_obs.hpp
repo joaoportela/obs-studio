@@ -50,4 +50,10 @@ OBSSource setup_audio_input(std::string audio_device);
  *
  * @return references to the new outputs.
  */
-Outputs setup_outputs(std::string video_encoder_id, std::string rate_control, int video_bitrate, int video_cqp, std::vector<std::string> output_paths);
+Outputs setup_outputs(std::string video_encoder_id,
+	std::string rate_control,
+	std::string preset,
+	std::string profile,
+	int video_bitrate,
+	int video_cqp,
+	std::vector<std::string> output_paths);

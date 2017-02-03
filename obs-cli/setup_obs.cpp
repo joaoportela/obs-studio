@@ -159,13 +159,21 @@ OBSSource setup_audio_input(std::string audio_device) {
 	return source;
 }
 
-Outputs setup_outputs(std::string video_encoder_id, std::string rate_control, int video_bitrate, int video_cqp, std::vector<std::string> output_paths) {
+Outputs setup_outputs(std::string video_encoder_id,
+	std::string rate_control,
+	std::string preset,
+	std::string profile,
+	int video_bitrate,
+	int video_cqp,
+	std::vector<std::string> output_paths) {
 	OBSEncoder video_encoder = obs_video_encoder_create(video_encoder_id.c_str(), "video_encoder", nullptr, nullptr);
 	obs_encoder_release(video_encoder);
 	obs_encoder_set_video(video_encoder, obs_get_video());
 	{
 		obs_data_t * encoder_settings = obs_data_create();
 		obs_data_set_string(encoder_settings, "rate_control", rate_control.c_str());
+		obs_data_set_string(encoder_settings, "preset", preset.c_str());
+		obs_data_set_string(encoder_settings, "profile", profile.c_str());
 		obs_data_set_int(encoder_settings, "bitrate", video_bitrate);
 		obs_data_set_int(encoder_settings, "cqp", video_cqp);
 
@@ -178,7 +186,6 @@ Outputs setup_outputs(std::string video_encoder_id, std::string rate_control, in
 	obs_encoder_set_audio(audio_encoder, obs_get_audio());
 	{
 		obs_data_t * encoder_settings = obs_data_create();
-		obs_data_set_string(encoder_settings, "rate_control", "CBR");
 		obs_data_set_int(encoder_settings, "samplerate", 44100);
 		obs_data_set_int(encoder_settings, "bitrate", 160);
 		obs_data_set_default_bool(encoder_settings, "allow he-aac", true);

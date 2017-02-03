@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include<obs.hpp>
+#include<string>
 
 void print_obs_enum_input_types();
 
@@ -28,3 +28,6 @@ void print_obs_enum_encoder_types();
 void print_obs_enum_output_types();
 
 void print_obs_enum_audio_types();
+
+void print_obs_enum_presets(const std::string& encoder);
+void print_obs_enum_profiles(const std::string& encoder);

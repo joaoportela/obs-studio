@@ -54,12 +54,16 @@ namespace {
 		static const int default_video_cqp;
 		static const int default_fps;
 		static const std::string default_rate_control;
+		static const std::string default_preset;
+		static const std::string default_profile;
 
 		// cli options
 		int monitor_to_record = 0;
 		std::string encoder;
 		std::string audio_device;
 		std::string rate_control;
+		std::string preset;
+		std::string profile;
 		int video_bitrate;
 		int video_cqp;
 		int fps;
@@ -70,12 +74,16 @@ namespace {
 		bool list_encoders = false;
 		bool list_inputs = false;
 		bool list_outputs = false;
+		bool list_presets = false;
+		bool list_profiles = false;
 	} cli_options;
 	const std::string CliOptions::default_encoder = "obs_x264";
 	const int CliOptions::default_video_bitrate = 2500;
 	const int CliOptions::default_video_cqp = 23;
 	const int CliOptions::default_fps = 60;
 	const std::string CliOptions::default_rate_control = "CBR";
+	const std::string CliOptions::default_preset = "medium";
+	const std::string CliOptions::default_profile = "main";
 } // namespace
 
 /**
@@ -162,7 +170,10 @@ bool should_print_lists() {
 		|| cli_options.list_audios
 		|| cli_options.list_encoders
 		|| cli_options.list_inputs
-		|| cli_options.list_outputs;
+		|| cli_options.list_outputs
+		|| cli_options.list_presets
+		|| cli_options.list_profiles
+		;
 }
 
 bool do_print_lists() {
@@ -180,6 +191,12 @@ bool do_print_lists() {
 	}
 	if (cli_options.list_outputs) {
 		print_obs_enum_output_types();
+	}
+	if (cli_options.list_presets) {
+		print_obs_enum_presets(cli_options.encoder);
+	}
+	if (cli_options.list_profiles) {
+		print_obs_enum_profiles(cli_options.encoder);
 	}
 
 	return should_print_lists();
@@ -204,37 +221,59 @@ int parse_args(int argc, char **argv) {
 
 	namespace po = boost::program_options;
 
-	// Declare the supported options.
-	po::options_description desc("obs-cli Allowed options");
-	desc.add_options()
-		("help,h", "Show help message")
-		("listmonitors", "List available monitors resolutions")
-		("listinputs", "List available inputs")
-		("listencoders", "List available encoders")
-		("listoutputs", "List available outputs")
-		("listaudios", "List available audios")
+	po::options_description required;
+	required.add_options()
 		("monitor,m", po::value<int>(&cli_options.monitor_to_record)->required(), "set monitor to be recorded")
+		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths)->required(), "set file destination, can be set multiple times for multiple outputs")
+		;
+
+	po::options_description required_fields_not_required;
+	required_fields_not_required.add_options()
+		("monitor,m", po::value<int>(&cli_options.monitor_to_record), "set monitor to be recorded")
+		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths), "set file destination, can be set multiple times for multiple outputs")
+		;
+
+	po::options_description non_required;
+	non_required.add_options()
+		("help,h", po::bool_switch(&(cli_options.show_help)), "Show help message")
+		("listmonitors", po::bool_switch(&(cli_options.list_monitors)), "List available monitors resolutions")
+		("listinputs", po::bool_switch(&(cli_options.list_inputs)), "List available inputs")
+		("listencoders", po::bool_switch(&(cli_options.list_encoders)), "List available encoders")
+		("listoutputs", po::bool_switch(&(cli_options.list_outputs)), "List available outputs")
+		("listaudios", po::bool_switch(&(cli_options.list_audios)), "List available audios")
+		("listpresets", po::bool_switch(&(cli_options.list_presets)), "List presets available for current encoder")
+		("listprofiles", po::bool_switch(&(cli_options.list_profiles)), "List profiles available for current encoder")
 		("audio,a", po::value<std::string>(&cli_options.audio_device)->default_value("")->implicit_value("default"), "set audio to be recorded (default to mic) -a\"device_name\" ")
 		("encoder,e", po::value<std::string>(&cli_options.encoder)->default_value(CliOptions::default_encoder), "set encoder")
 		("ratecontrol", po::value<std::string>(&cli_options.rate_control)->default_value(CliOptions::default_rate_control), "set rate control.")
 		("bitrate", po::value<int>(&cli_options.video_bitrate)->default_value(CliOptions::default_video_bitrate), "set video bitrate for rate controls that need it (CBR, VBR). suggested values for HD: 1200 for low, 2500 for medium, 5000 for high")
 		("cqp", po::value<int>(&cli_options.video_cqp)->default_value(CliOptions::default_video_cqp), "set video cqp parameter for CQP rate control.")
 		("fps", po::value<int>(&cli_options.fps)->default_value(CliOptions::default_fps), "set capture fps.")
-		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths)->required(), "set file destination, can be set multiple times for multiple outputs")
+		("preset", po::value<std::string>(&cli_options.preset)->default_value(CliOptions::default_preset), "set encoder preset.")
+		("profile", po::value<std::string>(&cli_options.profile)->default_value(CliOptions::default_profile), "set encoder profile.")
 		;
 
-	try {
-		po::variables_map vm;
-		po::store(po::parse_command_line(argc, argv, desc), vm);
+		// TODO - rethink this weird stuff (desc options_proxy)
 
-		// must be manually set instead of using po::switch because they are
-		// called before po::notify
-		cli_options.show_help = vm.count("help") > 0;
-		cli_options.list_monitors = vm.count("listmonitors") > 0;
-		cli_options.list_inputs = vm.count("listinputs") > 0;
-		cli_options.list_audios = vm.count("listaudios") > 0;
-		cli_options.list_encoders = vm.count("listencoders") > 0;
-		cli_options.list_outputs = vm.count("listoutputs") > 0;
+		// Declare normal supported options.
+		po::options_description desc("obs-cli Allowed options");
+		desc.add(required);
+		desc.add(non_required);
+
+		// Declare supported options without forcing required fields.
+		po::options_description options_proxy("obs-cli Allowed options");
+		options_proxy.add(required_fields_not_required);
+		options_proxy.add(non_required);
+
+	try {
+		{
+			// check options without forcing check for required fields to avoid
+			// raising erros when doing help or list.
+			po::variables_map vm;
+			po::store(po::parse_command_line(argc, argv, options_proxy), vm);
+
+			po::notify(vm);
+		}
 
 		if (cli_options.show_help) {
 			std::cout << desc << "\n";
@@ -245,9 +284,14 @@ int parse_args(int argc, char **argv) {
 			// will be properly handled later.
 			return Ret::success;
 
-		// only called here because it checks required fields, and when are trying to
-		// use `help` or `list*` we want to ignore required fields.
-		po::notify(vm);
+		{
+			// only called here because it checks required fields, and when are trying to
+			// use `help` or `list*` we want to ignore required fields.
+			po::variables_map vm;
+			po::store(po::parse_command_line(argc, argv, desc), vm);
+
+			po::notify(vm);
+		}
 	}
 	catch (po::error& e) {
 		std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
@@ -315,14 +359,17 @@ int main(int argc, char **argv) {
 
 		MonitorInfo monitor = monitor_at_index(cli_options.monitor_to_record);
 		video_source = setup_video_input(monitor);
-		if (!cli_options.audio_device.empty()){
+		if (!cli_options.audio_device.empty()) {
 			audio_source = setup_audio_input(cli_options.audio_device);
 			if (!audio_source){
 				std::cout << "failed to find audio device " << cli_options.audio_device << "." << std::endl;
 			}
 		}
 		// Also declared in "main" scope. While the outputs are kept in scope, we will continue recording.
-		Outputs output = setup_outputs(cli_options.encoder, cli_options.rate_control, cli_options.video_bitrate, cli_options.video_cqp, cli_options.outputs_paths);
+		Outputs output = setup_outputs(cli_options.encoder, cli_options.rate_control,
+			cli_options.preset, cli_options.profile,
+			cli_options.video_bitrate, cli_options.video_cqp,
+			cli_options.outputs_paths);
 
 		EventLoop loop;
 
