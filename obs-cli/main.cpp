@@ -139,7 +139,7 @@ void stop_recording(std::vector<OBSOutput> outputs){
 *
 *   Calls obs_output_start(output) internally.
 */
-void start_recording(std::vector<OBSOutput> outputs) {
+bool start_recording(std::vector<OBSOutput> outputs) {
 	int outputs_started = 0;
 	for (auto output : outputs) {
 		bool success = obs_output_start(output);
@@ -148,10 +148,12 @@ void start_recording(std::vector<OBSOutput> outputs) {
 
 	if (outputs_started == outputs.size()) {
 		std::cout << "Recording started for all outputs!" << std::endl;
+		return true;
 	}
 	else {
 		size_t outputs_failed = outputs.size() - outputs_started;
 		std::cerr << outputs_failed << "/" << outputs.size() << " file outputs are not recording." << std::endl;
+		return false;
 	}
 }
 
@@ -331,7 +333,9 @@ int main(int argc, char **argv) {
 			output_stop.Connect(obs_output_get_signal_handler(o), "stop", stop_output_callback, &loop);
 		}
 
-		start_recording(output.outputs);
+		bool success = start_recording(output.outputs);
+		if (!success)
+			return Ret::error_obs;
 
 		loop.run();
 		stop_recording(output.outputs);
