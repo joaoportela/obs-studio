@@ -1,5 +1,6 @@
 #include "enum_types.hpp"
 
+#include<obs.hpp>
 #include<iostream>
 
 void print_obs_enum_input_types() {
@@ -124,4 +125,45 @@ void print_obs_enum_audio_types(){
 	print_obs_enum_audio_type(props);
 
 	std::cout << "#############" << std::endl;
+}
+
+void print_obs_enum_presets(const std::string & encoder) {
+	std::cout << "Presets for '" << encoder << "':" << std::endl;
+
+	obs_properties_t *props = obs_get_encoder_properties(encoder.c_str());
+
+	obs_property_t *p = obs_properties_get(props, "preset");
+	size_t num = obs_property_list_item_count(p);
+	for (size_t i = 0; i < num; i++) {
+		const char *name = obs_property_list_item_name(p, i);
+		const char *val  = obs_property_list_item_string(p, i);
+
+		std::cout << "\t" << val << ": " << name << std::endl;
+	}
+
+	obs_properties_destroy(props);
+}
+
+void print_obs_enum_profiles(const std::string & encoder) {
+	std::cout << "Profiles for '" << encoder << "':" << std::endl;
+
+	obs_properties_t *props = obs_get_encoder_properties(encoder.c_str());
+
+	obs_property_t *p = obs_properties_get(props, "profile");
+	size_t num = obs_property_list_item_count(p);
+	for (size_t i = 0; i < num; i++) {
+		const char *name = obs_property_list_item_name(p, i);
+		const char *val  = obs_property_list_item_string(p, i);
+
+		if (encoder == "ffmpeg_nvenc"
+			&& strcmp(val, "high444p") == 0) {
+			// don't list high444p as a valid profile for ffmpeg_nvenc.
+			// It has recording issues.
+			continue;
+		}
+
+		std::cout << "\t" << val << ": " << name << std::endl;
+	}
+
+	obs_properties_destroy(props);
 }
