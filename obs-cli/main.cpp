@@ -374,6 +374,8 @@ int main(int argc, char **argv) {
 		loop.run();
 		stop_recording(output.outputs);
 
+		// Known issue: obs_qsv11 is not properly releasing some locks before shutdown.
+
 		obs_set_output_source(0, nullptr);
 		obs_set_output_source(1, nullptr);
 		return Ret::success;
