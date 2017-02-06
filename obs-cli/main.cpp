@@ -74,8 +74,8 @@ namespace {
 		bool list_encoders = false;
 		bool list_inputs = false;
 		bool list_outputs = false;
-		bool list_presets = false;
-		bool list_profiles = false;
+		std::string list_presets = "";
+		std::string list_profiles = "";
 	} cli_options;
 	const std::string CliOptions::default_encoder = "obs_x264";
 	const int CliOptions::default_video_bitrate = 2500;
@@ -171,8 +171,8 @@ bool should_print_lists() {
 		|| cli_options.list_encoders
 		|| cli_options.list_inputs
 		|| cli_options.list_outputs
-		|| cli_options.list_presets
-		|| cli_options.list_profiles
+		|| !cli_options.list_presets.empty()
+		|| !cli_options.list_profiles.empty()
 		;
 }
 
@@ -192,11 +192,11 @@ bool do_print_lists() {
 	if (cli_options.list_outputs) {
 		print_obs_enum_output_types();
 	}
-	if (cli_options.list_presets) {
-		print_obs_enum_presets(cli_options.encoder);
+	if (!cli_options.list_presets.empty()) {
+		print_obs_enum_presets(cli_options.list_presets);
 	}
-	if (cli_options.list_profiles) {
-		print_obs_enum_profiles(cli_options.encoder);
+	if (!cli_options.list_profiles.empty()) {
+		print_obs_enum_profiles(cli_options.list_profiles);
 	}
 
 	return should_print_lists();
@@ -221,28 +221,22 @@ int parse_args(int argc, char **argv) {
 
 	namespace po = boost::program_options;
 
-	po::options_description required;
-	required.add_options()
-		("monitor,m", po::value<int>(&cli_options.monitor_to_record)->required(), "set monitor to be recorded")
-		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths)->required(), "set file destination, can be set multiple times for multiple outputs")
-		;
-
-	po::options_description required_fields_not_required;
-	required_fields_not_required.add_options()
-		("monitor,m", po::value<int>(&cli_options.monitor_to_record), "set monitor to be recorded")
-		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths), "set file destination, can be set multiple times for multiple outputs")
-		;
-
-	po::options_description non_required;
-	non_required.add_options()
+	po::options_description help_and_list;
+	help_and_list.add_options()
 		("help,h", po::bool_switch(&(cli_options.show_help)), "Show help message")
 		("listmonitors", po::bool_switch(&(cli_options.list_monitors)), "List available monitors resolutions")
 		("listinputs", po::bool_switch(&(cli_options.list_inputs)), "List available inputs")
 		("listencoders", po::bool_switch(&(cli_options.list_encoders)), "List available encoders")
 		("listoutputs", po::bool_switch(&(cli_options.list_outputs)), "List available outputs")
 		("listaudios", po::bool_switch(&(cli_options.list_audios)), "List available audios")
-		("listpresets", po::bool_switch(&(cli_options.list_presets)), "List presets available for current encoder")
-		("listprofiles", po::bool_switch(&(cli_options.list_profiles)), "List profiles available for current encoder")
+		("listpresets", po::value<std::string>(&(cli_options.list_presets))->default_value("")->value_name("encoder"), "List presets available for encoder")
+		("listprofiles", po::value<std::string>(&(cli_options.list_profiles))->default_value("")->value_name("encoder"), "List profiles available for encoder")
+		;
+
+	po::options_description main_options;
+	main_options.add_options()
+		("monitor,m", po::value<int>(&cli_options.monitor_to_record)->required(), "set monitor to be recorded")
+		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths)->required(), "set file destination, can be set multiple times for multiple outputs")
 		("audio,a", po::value<std::string>(&cli_options.audio_device)->default_value("")->implicit_value("default"), "set audio to be recorded (default to mic) -a\"device_name\" ")
 		("encoder,e", po::value<std::string>(&cli_options.encoder)->default_value(CliOptions::default_encoder), "set encoder")
 		("ratecontrol", po::value<std::string>(&cli_options.rate_control)->default_value(CliOptions::default_rate_control), "set rate control.")
@@ -253,30 +247,23 @@ int parse_args(int argc, char **argv) {
 		("profile", po::value<std::string>(&cli_options.profile)->default_value(CliOptions::default_profile), "set encoder profile.")
 		;
 
-		// TODO - rethink this weird stuff (desc options_proxy)
-
 		// Declare normal supported options.
-		po::options_description desc("obs-cli Allowed options");
-		desc.add(required);
-		desc.add(non_required);
-
-		// Declare supported options without forcing required fields.
-		po::options_description options_proxy("obs-cli Allowed options");
-		options_proxy.add(required_fields_not_required);
-		options_proxy.add(non_required);
+		po::options_description all_options("obs-cli Allowed options");
+		all_options.add(help_and_list);
+		all_options.add(main_options);
 
 	try {
 		{
 			// check options without forcing check for required fields to avoid
 			// raising erros when doing help or list.
 			po::variables_map vm;
-			po::store(po::parse_command_line(argc, argv, options_proxy), vm);
+			po::store(po::parse_command_line(argc, argv, help_and_list), vm);
 
 			po::notify(vm);
 		}
 
 		if (cli_options.show_help) {
-			std::cout << desc << "\n";
+			std::cout << all_options << "\n";
 			return Ret::success;
 		}
 
@@ -288,14 +275,14 @@ int parse_args(int argc, char **argv) {
 			// only called here because it checks required fields, and when are trying to
 			// use `help` or `list*` we want to ignore required fields.
 			po::variables_map vm;
-			po::store(po::parse_command_line(argc, argv, desc), vm);
+			po::store(po::parse_command_line(argc, argv, all_options), vm);
 
 			po::notify(vm);
 		}
 	}
 	catch (po::error& e) {
 		std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
-		std::cerr << desc << std::endl;
+		std::cerr << all_options << std::endl;
 		return Ret::error_in_command_line;
 	}
 
