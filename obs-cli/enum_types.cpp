@@ -155,6 +155,13 @@ void print_obs_enum_profiles(const std::string & encoder) {
 		const char *name = obs_property_list_item_name(p, i);
 		const char *val  = obs_property_list_item_string(p, i);
 
+		if (encoder == "ffmpeg_nvenc"
+			&& strcmp(val, "high444p") == 0) {
+			// don't list high444p as a valid profile for ffmpeg_nvenc.
+			// It has recording issues.
+			continue;
+		}
+
 		std::cout << "\t" << val << ": " << name << std::endl;
 	}
 
