@@ -221,8 +221,9 @@ int parse_args(int argc, char **argv) {
 
 	namespace po = boost::program_options;
 
-	po::options_description help_and_list;
-	help_and_list.add_options()
+	// note: required options will be checked manually.
+	po::options_description all_options("obs-cli Allowed options");
+	all_options.add_options()
 		("help,h", po::bool_switch(&(cli_options.show_help)), "Show help message")
 		("listmonitors", po::bool_switch(&(cli_options.list_monitors)), "List available monitors resolutions")
 		("listinputs", po::bool_switch(&(cli_options.list_inputs)), "List available inputs")
@@ -231,12 +232,9 @@ int parse_args(int argc, char **argv) {
 		("listaudios", po::bool_switch(&(cli_options.list_audios)), "List available audios")
 		("listpresets", po::value<std::string>(&(cli_options.list_presets))->default_value("")->value_name("encoder"), "List presets available for encoder")
 		("listprofiles", po::value<std::string>(&(cli_options.list_profiles))->default_value("")->value_name("encoder"), "List profiles available for encoder")
-		;
 
-	po::options_description main_options;
-	main_options.add_options()
-		("monitor,m", po::value<int>(&cli_options.monitor_to_record)->required(), "set monitor to be recorded")
-		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths)->required(), "set file destination, can be set multiple times for multiple outputs")
+		("monitor,m", po::value<int>(&cli_options.monitor_to_record), "set monitor to be recorded")
+		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths), "set file destination, can be set multiple times for multiple outputs")
 		("audio,a", po::value<std::string>(&cli_options.audio_device)->default_value("")->implicit_value("default"), "set audio to be recorded (default to mic) -a\"device_name\" ")
 		("encoder,e", po::value<std::string>(&cli_options.encoder)->default_value(CliOptions::default_encoder), "set encoder")
 		("ratecontrol", po::value<std::string>(&cli_options.rate_control)->default_value(CliOptions::default_rate_control), "set rate control.")
@@ -247,20 +245,12 @@ int parse_args(int argc, char **argv) {
 		("profile", po::value<std::string>(&cli_options.profile)->default_value(CliOptions::default_profile), "set encoder profile.")
 		;
 
-		// Declare normal supported options.
-		po::options_description all_options("obs-cli Allowed options");
-		all_options.add(help_and_list);
-		all_options.add(main_options);
-
 	try {
-		{
-			// check options without forcing check for required fields to avoid
-			// raising erros when doing help or list.
-			po::variables_map vm;
-			po::store(po::parse_command_line(argc, argv, help_and_list), vm);
 
-			po::notify(vm);
-		}
+		po::variables_map vm;
+		po::store(po::parse_command_line(argc, argv, all_options), vm);
+
+		po::notify(vm);
 
 		if (cli_options.show_help) {
 			std::cout << all_options << "\n";
@@ -271,13 +261,13 @@ int parse_args(int argc, char **argv) {
 			// will be properly handled later.
 			return Ret::success;
 
-		{
-			// only called here because it checks required fields, and when are trying to
-			// use `help` or `list*` we want to ignore required fields.
-			po::variables_map vm;
-			po::store(po::parse_command_line(argc, argv, all_options), vm);
-
-			po::notify(vm);
+		// Check required options.
+		// These are checked manually to not interfere with help and list* options.
+		if (vm.count("monitor") == 0) {
+			throw po::required_option("monitor");
+		}
+		if (vm.count("output") == 0) {
+			throw po::required_option("output");
 		}
 	}
 	catch (po::error& e) {
