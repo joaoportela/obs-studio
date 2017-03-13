@@ -33,3 +33,6 @@ add_executable(${PROJECT_NAME} ${SRC_LIST})
 target_link_libraries(${PROJECT_NAME} libobs ${Boost_LIBRARIES})
 
 install_obs_core(${PROJECT_NAME})
+
+# install obs-cli data.
+install_obs_data(${PROJECT_NAME} data obs-cli)
