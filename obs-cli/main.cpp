@@ -29,6 +29,7 @@
 #include"monitor_info.hpp"
 #include"setup_obs.hpp"
 #include"event_loop.hpp"
+#include "string_conversions.hpp"
 
 #define do_log(level, format, ...) \
 	blog(level, "[main] " format, ##__VA_ARGS__)
@@ -67,7 +68,7 @@ namespace {
 		int video_bitrate;
 		int video_cqp;
 		int fps;
-		std::vector<std::string> outputs_paths;
+		std::vector<std::wstring> outputs_paths;
 		bool show_help = false;
 		bool list_monitors = false;
 		bool list_audios = false;
@@ -234,7 +235,7 @@ int parse_args(int argc, char **argv) {
 		("listprofiles", po::value<std::string>(&(cli_options.list_profiles))->default_value("")->value_name("encoder"), "List profiles available for encoder")
 
 		("monitor,m", po::value<int>(&cli_options.monitor_to_record), "set monitor to be recorded")
-		("output,o", po::value<std::vector<std::string>>(&cli_options.outputs_paths), "set file destination, can be set multiple times for multiple outputs")
+		("output,o", po::wvalue<std::vector<std::wstring>>(&cli_options.outputs_paths), "set file destination, can be set multiple times for multiple outputs")
 		("audio,a", po::value<std::string>(&cli_options.audio_device)->default_value("")->implicit_value("default"), "set audio to be recorded (default to mic) -a\"device_name\" ")
 		("encoder,e", po::value<std::string>(&cli_options.encoder)->default_value(CliOptions::default_encoder), "set encoder")
 		("ratecontrol", po::value<std::string>(&cli_options.rate_control)->default_value(CliOptions::default_rate_control), "set rate control.")
@@ -288,7 +289,7 @@ void start_output_callback(void * /*data*/, calldata_t *params) {
 void stop_output_callback(void *data, calldata_t *params) {
 	auto loop = static_cast<EventLoop*>(data);
 	auto output = static_cast<obs_output_t*>(calldata_ptr(params, "output"));
-	int code = calldata_int(params, "code");
+	long long code = calldata_int(params, "code");
 
 	blog(LOG_INFO, "Output '%s' stopped with code %d.", obs_output_get_name(output), code);
 	// as soon as *any* output is stopped, we have to ensure that the

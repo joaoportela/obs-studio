@@ -2,6 +2,8 @@
 
 #include<boost/algorithm/string/predicate.hpp>
 
+#include "string_conversions.hpp"
+
 #define do_log(level, format, ...) \
 	blog(level, "[setup_obs.cpp] " format, ##__VA_ARGS__)
 
@@ -165,7 +167,7 @@ Outputs setup_outputs(std::string video_encoder_id,
 	std::string profile,
 	int video_bitrate,
 	int video_cqp,
-	std::vector<std::string> output_paths) {
+	std::vector<std::wstring> output_paths) {
 	OBSEncoder video_encoder = obs_video_encoder_create(video_encoder_id.c_str(), "video_encoder", nullptr, nullptr);
 	obs_encoder_release(video_encoder);
 	obs_encoder_set_video(video_encoder, obs_get_video());
@@ -203,7 +205,7 @@ Outputs setup_outputs(std::string video_encoder_id,
 		obs_output_release(file_output);
 		{
 			obs_data_t * output_settings = obs_data_create();
-			obs_data_set_string(output_settings, "path", output_path.c_str());
+			obs_data_set_string(output_settings, "path", wstring_to_utf8(output_path).c_str());
 			obs_data_set_string(output_settings, "muxer_settings", NULL);
 
 			obs_output_update(file_output, output_settings);

@@ -27,6 +27,8 @@ set(SRC_LIST
 	monitor_info.hpp
 	event_loop.cpp
 	event_loop.hpp
+	string_conversions.hpp
+	string_conversions.cpp
 	)
 add_executable(${PROJECT_NAME} ${SRC_LIST})
 

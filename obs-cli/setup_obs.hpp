@@ -56,4 +56,4 @@ Outputs setup_outputs(std::string video_encoder_id,
 	std::string profile,
 	int video_bitrate,
 	int video_cqp,
-	std::vector<std::string> output_paths);
+	std::vector<std::wstring> output_paths);
