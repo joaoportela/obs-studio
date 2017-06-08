@@ -12,14 +12,14 @@
 #define debug(format, ...) do_log(LOG_DEBUG,   format, ##__VA_ARGS__)
 
 #ifdef __APPLE__
-#define INPUT_AUDIO_SOURCE  "coreaudio_input_capture"
-#define OUTPUT_AUDIO_SOURCE "coreaudio_output_capture"
+#define INPUT_AUDIO_SOURCE  L"coreaudio_input_capture"
+#define OUTPUT_AUDIO_SOURCE L"coreaudio_output_capture"
 #elif _WIN32
-#define INPUT_AUDIO_SOURCE  "wasapi_input_capture"
-#define OUTPUT_AUDIO_SOURCE "wasapi_output_capture"
+#define INPUT_AUDIO_SOURCE  L"wasapi_input_capture"
+#define OUTPUT_AUDIO_SOURCE L"wasapi_output_capture"
 #else
-#define INPUT_AUDIO_SOURCE  "pulse_input_capture"
-#define OUTPUT_AUDIO_SOURCE "pulse_output_capture"
+#define INPUT_AUDIO_SOURCE  L"pulse_input_capture"
+#define OUTPUT_AUDIO_SOURCE L"pulse_output_capture"
 #endif
 
 #include<iostream>
@@ -80,10 +80,10 @@ OBSSource setup_video_input(MonitorInfo monitor) {
 	return source;
 }
 
-std::string search_audio_device_by_type(std::string* audio_device, std::string* device_type){
+std::wstring search_audio_device_by_type(std::wstring* audio_device, std::wstring* device_type){
 
 	std::string device_id;
-	obs_properties_t* props = obs_get_source_properties(device_type->c_str());
+	obs_properties_t* props = obs_get_source_properties(wstring_to_utf8(*device_type).c_str());
 
 	obs_property_t *property = obs_properties_first(props);
 
@@ -107,7 +107,7 @@ std::string search_audio_device_by_type(std::string* audio_device, std::string* 
 				if (cformat == OBS_COMBO_FORMAT_STRING){
 					if (boost::iequals(nameListItem, audio_device->c_str())) {
 						device_id = obs_property_list_item_string(property, cidx);
-						return device_id;
+						return utf8_to_wstring(device_id);
 					}
 				}
 			}
@@ -118,12 +118,12 @@ std::string search_audio_device_by_type(std::string* audio_device, std::string* 
 		}
 		obs_property_next(&property);
 	}
-	return device_id;
+	return utf8_to_wstring(device_id);
 }
 
-void search_audio_device_by_name(std::string audio_device, std::string* device_id, std::string* device_type){
+void search_audio_device_by_name(std::wstring audio_device, std::wstring* device_id, std::wstring* device_type){
 	//std::string device_id;
-	std::string st = std::string(INPUT_AUDIO_SOURCE);
+	std::wstring st = std::wstring(INPUT_AUDIO_SOURCE);
 	*device_type = st;
 	*device_id = search_audio_device_by_type(&audio_device, device_type);
 
@@ -131,24 +131,24 @@ void search_audio_device_by_name(std::string audio_device, std::string* device_i
 	if (!device_id->empty())
 		return;
 
-	*device_type = std::string(OUTPUT_AUDIO_SOURCE);
+	*device_type = std::wstring(OUTPUT_AUDIO_SOURCE);
 	*device_id = search_audio_device_by_type(&audio_device, device_type);
 	return;
 }
-OBSSource setup_audio_input(std::string audio_device) {
+OBSSource setup_audio_input(std::wstring audio_device) {
 
-	std::string device_id;
-	std::string device_type;
+	std::wstring device_id;
+	std::wstring device_type;
 
 	search_audio_device_by_name(audio_device, &device_id, &device_type);
 	if (device_id.empty())
 		return nullptr;
 
-	OBSSource source = obs_source_create(device_type.c_str(), "audio capture", nullptr, nullptr);
+	OBSSource source = obs_source_create(wstring_to_utf8(device_type).c_str(), "audio capture", nullptr, nullptr);
 	{
 		obs_data_t * source_settings = obs_data_create();
 
-		obs_data_set_string(source_settings, "device_id", device_id.c_str());
+		obs_data_set_string(source_settings, "device_id", wstring_to_utf8(device_id).c_str());
 
 		obs_source_update(source, source_settings);
 		obs_data_release(source_settings);
@@ -161,21 +161,21 @@ OBSSource setup_audio_input(std::string audio_device) {
 	return source;
 }
 
-Outputs setup_outputs(std::string video_encoder_id,
-	std::string rate_control,
-	std::string preset,
-	std::string profile,
+Outputs setup_outputs(std::wstring video_encoder_id,
+	std::wstring rate_control,
+	std::wstring preset,
+	std::wstring profile,
 	int video_bitrate,
 	int video_cqp,
 	std::vector<std::wstring> output_paths) {
-	OBSEncoder video_encoder = obs_video_encoder_create(video_encoder_id.c_str(), "video_encoder", nullptr, nullptr);
+	OBSEncoder video_encoder = obs_video_encoder_create(wstring_to_utf8(video_encoder_id).c_str(), "video_encoder", nullptr, nullptr);
 	obs_encoder_release(video_encoder);
 	obs_encoder_set_video(video_encoder, obs_get_video());
 	{
 		obs_data_t * encoder_settings = obs_data_create();
-		obs_data_set_string(encoder_settings, "rate_control", rate_control.c_str());
-		obs_data_set_string(encoder_settings, "preset", preset.c_str());
-		obs_data_set_string(encoder_settings, "profile", profile.c_str());
+		obs_data_set_string(encoder_settings, "rate_control", wstring_to_utf8(rate_control).c_str());
+		obs_data_set_string(encoder_settings, "preset", wstring_to_utf8(preset).c_str());
+		obs_data_set_string(encoder_settings, "profile", wstring_to_utf8(profile).c_str());
 		obs_data_set_int(encoder_settings, "bitrate", video_bitrate);
 		obs_data_set_int(encoder_settings, "cqp", video_cqp);
 
@@ -200,8 +200,8 @@ Outputs setup_outputs(std::string video_encoder_id,
 	std::vector<OBSOutput> outputs;
 	for (int i = 0; i < output_paths.size(); i++) {
 		auto output_path = output_paths[i];
-		std::string name("file_output_" + std::to_string(i));
-		OBSOutput file_output = obs_output_create("ffmpeg_muxer", name.c_str(), nullptr, nullptr);
+		std::wstring name(L"file_output_" + std::to_wstring(i));
+		OBSOutput file_output = obs_output_create("ffmpeg_muxer", wstring_to_utf8(name).c_str(), nullptr, nullptr);
 		obs_output_release(file_output);
 		{
 			obs_data_t * output_settings = obs_data_create();

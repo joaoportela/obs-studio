@@ -39,7 +39,7 @@ OBSSource setup_video_input(MonitorInfo monitor);
 /**
 * Setup input to capture audio.
 */
-OBSSource setup_audio_input(std::string audio_device);
+OBSSource setup_audio_input(std::wstring audio_device);
 
 /**
  * Setup output to multiple files using the specified encoder and bitrate.
@@ -50,10 +50,10 @@ OBSSource setup_audio_input(std::string audio_device);
  *
  * @return references to the new outputs.
  */
-Outputs setup_outputs(std::string video_encoder_id,
-	std::string rate_control,
-	std::string preset,
-	std::string profile,
+Outputs setup_outputs(std::wstring video_encoder_id,
+	std::wstring rate_control,
+	std::wstring preset,
+	std::wstring profile,
 	int video_bitrate,
 	int video_cqp,
 	std::vector<std::wstring> output_paths);

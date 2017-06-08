@@ -50,21 +50,21 @@ namespace {
 
 	struct CliOptions {
 		// default values
-		static const std::string default_encoder;
+		static const std::wstring default_encoder;
 		static const int default_video_bitrate;
 		static const int default_video_cqp;
 		static const int default_fps;
-		static const std::string default_rate_control;
-		static const std::string default_preset;
-		static const std::string default_profile;
+		static const std::wstring default_rate_control;
+		static const std::wstring default_preset;
+		static const std::wstring default_profile;
 
 		// cli options
 		int monitor_to_record = 0;
-		std::string encoder;
-		std::string audio_device;
-		std::string rate_control;
-		std::string preset;
-		std::string profile;
+		std::wstring encoder;
+		std::wstring audio_device;
+		std::wstring rate_control;
+		std::wstring preset;
+		std::wstring profile;
 		int video_bitrate;
 		int video_cqp;
 		int fps;
@@ -75,16 +75,16 @@ namespace {
 		bool list_encoders = false;
 		bool list_inputs = false;
 		bool list_outputs = false;
-		std::string list_presets = "";
-		std::string list_profiles = "";
+		std::wstring list_presets = L"";
+		std::wstring list_profiles = L"";
 	} cli_options;
-	const std::string CliOptions::default_encoder = "obs_x264";
+	const std::wstring CliOptions::default_encoder = L"obs_x264";
 	const int CliOptions::default_video_bitrate = 2500;
 	const int CliOptions::default_video_cqp = 23;
 	const int CliOptions::default_fps = 60;
-	const std::string CliOptions::default_rate_control = "CBR";
-	const std::string CliOptions::default_preset = "medium";
-	const std::string CliOptions::default_profile = "main";
+	const std::wstring CliOptions::default_rate_control = L"CBR";
+	const std::wstring CliOptions::default_preset = L"medium";
+	const std::wstring CliOptions::default_profile = L"main";
 } // namespace
 
 /**
@@ -231,19 +231,19 @@ int parse_args(int argc, char **argv) {
 		("listencoders", po::bool_switch(&(cli_options.list_encoders)), "List available encoders")
 		("listoutputs", po::bool_switch(&(cli_options.list_outputs)), "List available outputs")
 		("listaudios", po::bool_switch(&(cli_options.list_audios)), "List available audios")
-		("listpresets", po::value<std::string>(&(cli_options.list_presets))->default_value("")->value_name("encoder"), "List presets available for encoder")
-		("listprofiles", po::value<std::string>(&(cli_options.list_profiles))->default_value("")->value_name("encoder"), "List profiles available for encoder")
+		("listpresets", po::wvalue<std::wstring>(&(cli_options.list_presets))->default_value(L"", "")->value_name("encoder"), "List presets available for encoder")
+		("listprofiles", po::wvalue<std::wstring>(&(cli_options.list_profiles))->default_value(L"", "")->value_name("encoder"), "List profiles available for encoder")
 
 		("monitor,m", po::value<int>(&cli_options.monitor_to_record), "set monitor to be recorded")
 		("output,o", po::wvalue<std::vector<std::wstring>>(&cli_options.outputs_paths), "set file destination, can be set multiple times for multiple outputs")
-		("audio,a", po::value<std::string>(&cli_options.audio_device)->default_value("")->implicit_value("default"), "set audio to be recorded (default to mic) -a\"device_name\" ")
-		("encoder,e", po::value<std::string>(&cli_options.encoder)->default_value(CliOptions::default_encoder), "set encoder")
-		("ratecontrol", po::value<std::string>(&cli_options.rate_control)->default_value(CliOptions::default_rate_control), "set rate control.")
+		("audio,a", po::wvalue<std::wstring>(&cli_options.audio_device)->default_value(L"", "")->implicit_value(L"default", ""), "set audio to be recorded (default to mic) -a\"device_name\" ")
+		("encoder,e", po::wvalue<std::wstring>(&cli_options.encoder)->default_value(CliOptions::default_encoder, wstring_to_utf8(CliOptions::default_encoder)), "set encoder")
+		("ratecontrol", po::wvalue<std::wstring>(&cli_options.rate_control)->default_value(CliOptions::default_rate_control, wstring_to_utf8(CliOptions::default_rate_control)), "set rate control.")
 		("bitrate", po::value<int>(&cli_options.video_bitrate)->default_value(CliOptions::default_video_bitrate), "set video bitrate for rate controls that need it (CBR, VBR). suggested values for HD: 1200 for low, 2500 for medium, 5000 for high")
 		("cqp", po::value<int>(&cli_options.video_cqp)->default_value(CliOptions::default_video_cqp), "set video cqp parameter for CQP rate control.")
 		("fps", po::value<int>(&cli_options.fps)->default_value(CliOptions::default_fps), "set capture fps.")
-		("preset", po::value<std::string>(&cli_options.preset)->default_value(CliOptions::default_preset), "set encoder preset.")
-		("profile", po::value<std::string>(&cli_options.profile)->default_value(CliOptions::default_profile), "set encoder profile.")
+		("preset", po::wvalue<std::wstring>(&cli_options.preset)->default_value(CliOptions::default_preset, wstring_to_utf8(CliOptions::default_preset)), "set encoder preset.")
+		("profile", po::wvalue<std::wstring>(&cli_options.profile)->default_value(CliOptions::default_profile, wstring_to_utf8(CliOptions::default_profile)), "set encoder profile.")
 		;
 
 	try {
@@ -340,7 +340,7 @@ int main(int argc, char **argv) {
 		if (!cli_options.audio_device.empty()) {
 			audio_source = setup_audio_input(cli_options.audio_device);
 			if (!audio_source){
-				std::cout << "failed to find audio device " << cli_options.audio_device << "." << std::endl;
+				std::wcout << L"failed to find audio device " << cli_options.audio_device << L"." << std::endl;
 			}
 		}
 		// Also declared in "main" scope. While the outputs are kept in scope, we will continue recording.

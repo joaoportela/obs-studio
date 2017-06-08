@@ -3,6 +3,8 @@
 #include<obs.hpp>
 #include<iostream>
 
+#include "string_conversions.hpp"
+
 void print_obs_enum_input_types() {
 	const char *type;
 	bool foundValues = false;
@@ -13,7 +15,7 @@ void print_obs_enum_input_types() {
 	while (obs_enum_input_types(idx++, &type)) {
 		const char *name = obs_source_get_display_name(type);
 
-		std::cout << type << "\t" << name << std::endl;
+		std::wcout << utf8_to_wstring(type) << L"\t" << utf8_to_wstring(name) << std::endl;
 		foundValues = true;
 	}
 
@@ -34,7 +36,7 @@ void print_obs_enum_encoder_types() {
 		const char *name = obs_encoder_get_display_name(type);
 		const char *codec = obs_get_encoder_codec(type);
 
-		std::cout << type << "\t" << name << "\t" << codec << std::endl;
+		std::wcout << utf8_to_wstring(type) << L"\t" << utf8_to_wstring(name) << L"\t" << utf8_to_wstring(codec) << std::endl;
 		foundValues = true;
 	}
 
@@ -101,7 +103,10 @@ void print_obs_enum_audio_type(obs_properties_t* props){
 			{
 				const char *nameListItem = obs_property_list_item_name(property, cidx);
 				if (cformat == OBS_COMBO_FORMAT_STRING){
-					std::cout << cidx << ": " << nameListItem << "  |  " << obs_property_list_item_string(property, cidx) << std::endl;
+					std::wcout << cidx
+						<< ": " << utf8_to_wstring(nameListItem)
+						<< "  |  " << utf8_to_wstring(obs_property_list_item_string(property, cidx))
+						<< std::endl;
 				}
 			}
 
@@ -127,10 +132,10 @@ void print_obs_enum_audio_types(){
 	std::cout << "#############" << std::endl;
 }
 
-void print_obs_enum_presets(const std::string & encoder) {
-	std::cout << "Presets for '" << encoder << "':" << std::endl;
+void print_obs_enum_presets(const std::wstring & encoder) {
+	std::wcout << L"Presets for '" << encoder << L"':" << std::endl;
 
-	obs_properties_t *props = obs_get_encoder_properties(encoder.c_str());
+	obs_properties_t *props = obs_get_encoder_properties(wstring_to_utf8(encoder).c_str());
 
 	obs_property_t *p = obs_properties_get(props, "preset");
 	size_t num = obs_property_list_item_count(p);
@@ -138,16 +143,16 @@ void print_obs_enum_presets(const std::string & encoder) {
 		const char *name = obs_property_list_item_name(p, i);
 		const char *val  = obs_property_list_item_string(p, i);
 
-		std::cout << "\t" << val << ": " << name << std::endl;
+		std::wcout << L"\t" << utf8_to_wstring(val) << L": " << utf8_to_wstring(name) << std::endl;
 	}
 
 	obs_properties_destroy(props);
 }
 
-void print_obs_enum_profiles(const std::string & encoder) {
-	std::cout << "Profiles for '" << encoder << "':" << std::endl;
+void print_obs_enum_profiles(const std::wstring & encoder) {
+	std::wcout << L"Profiles for '" << encoder << L"':" << std::endl;
 
-	obs_properties_t *props = obs_get_encoder_properties(encoder.c_str());
+	obs_properties_t *props = obs_get_encoder_properties(wstring_to_utf8(encoder).c_str());
 
 	obs_property_t *p = obs_properties_get(props, "profile");
 	size_t num = obs_property_list_item_count(p);
@@ -155,14 +160,14 @@ void print_obs_enum_profiles(const std::string & encoder) {
 		const char *name = obs_property_list_item_name(p, i);
 		const char *val  = obs_property_list_item_string(p, i);
 
-		if (encoder == "ffmpeg_nvenc"
+		if (encoder == L"ffmpeg_nvenc"
 			&& strcmp(val, "high444p") == 0) {
 			// don't list high444p as a valid profile for ffmpeg_nvenc.
 			// It has recording issues.
 			continue;
 		}
 
-		std::cout << "\t" << val << ": " << name << std::endl;
+		std::wcout << L"\t" << utf8_to_wstring(val) << L": " << utf8_to_wstring(name) << std::endl;
 	}
 
 	obs_properties_destroy(props);
