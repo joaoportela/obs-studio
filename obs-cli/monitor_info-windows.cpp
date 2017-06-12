@@ -37,19 +37,22 @@ BOOL CALLBACK MonitorEnumProc(HMONITOR hMonitor, // handle to display monitor
 	return TRUE;
 }
 
-MonitorInfo monitor_at_index(int m) {
+MonitorInfo monitor_at_index(int m)
+{
 	if (m >= 0 && m < all_monitors.size())
 		return all_monitors[m];
 
 	return MonitorInfo::NotFound;
 }
 
-bool detect_monitors() {
+bool detect_monitors()
+{
 	all_monitors.clear();
 	return !!EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
 }
 
-void print_monitors_info() {
+void print_monitors_info()
+{
 	for (auto monitor : all_monitors) {
 		std::cout << "Monitor " << monitor.monitor_id << ": "
 			<< "" << monitor.width << "x"
@@ -58,4 +61,3 @@ void print_monitors_info() {
 			<< std::endl;
 	}
 }
-

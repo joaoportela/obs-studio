@@ -1,11 +1,12 @@
 #include "enum_types.hpp"
 
-#include<obs.hpp>
-#include<iostream>
+#include <obs.hpp>
+#include <iostream>
 
 #include "string_conversions.hpp"
 
-void print_obs_enum_input_types() {
+void print_obs_enum_input_types()
+{
 	const char *type;
 	bool foundValues = false;
 	size_t idx = 0;
@@ -25,7 +26,8 @@ void print_obs_enum_input_types() {
 	std::cout << "#############" << std::endl;
 }
 
-void print_obs_enum_encoder_types() {
+void print_obs_enum_encoder_types()
+{
 	const char *type;
 	bool foundValues = false;
 	size_t idx = 0;
@@ -46,7 +48,8 @@ void print_obs_enum_encoder_types() {
 	std::cout << "#############" << std::endl;
 }
 
-void print_obs_enum_output_types() {
+void print_obs_enum_output_types()
+{
 	const char *type;
 	bool foundValues = false;
 	size_t idx = 0;
@@ -65,19 +68,20 @@ void print_obs_enum_output_types() {
 	}
 	std::cout << "#############" << std::endl;
 }
+
 #ifdef __APPLE__
-#define INPUT_AUDIO_SOURCE  "coreaudio_input_capture"
-#define OUTPUT_AUDIO_SOURCE "coreaudio_output_capture"
+#define INPUT_AUDIO_SOURCE  L"coreaudio_input_capture"
+#define OUTPUT_AUDIO_SOURCE L"coreaudio_output_capture"
 #elif _WIN32
-#define INPUT_AUDIO_SOURCE  "wasapi_input_capture"
-#define OUTPUT_AUDIO_SOURCE "wasapi_output_capture"
+#define INPUT_AUDIO_SOURCE  L"wasapi_input_capture"
+#define OUTPUT_AUDIO_SOURCE L"wasapi_output_capture"
 #else
-#define INPUT_AUDIO_SOURCE  "pulse_input_capture"
-#define OUTPUT_AUDIO_SOURCE "pulse_output_capture"
+#define INPUT_AUDIO_SOURCE  L"pulse_input_capture"
+#define OUTPUT_AUDIO_SOURCE L"pulse_output_capture"
 #endif
 
-
-void print_obs_enum_audio_type(obs_properties_t* props){
+void print_obs_enum_audio_type(obs_properties_t* props)
+{
 	obs_property_t *property = obs_properties_first(props);
 	bool hasNoProperties = !property;
 	while (property){
@@ -118,7 +122,8 @@ void print_obs_enum_audio_type(obs_properties_t* props){
 	}
 }
 
-void print_obs_enum_audio_types(){
+void print_obs_enum_audio_types()
+{
 
 	std::cout << "Audio Input Captures:" << std::endl;
 
@@ -132,7 +137,8 @@ void print_obs_enum_audio_types(){
 	std::cout << "#############" << std::endl;
 }
 
-void print_obs_enum_presets(const std::wstring & encoder) {
+void print_obs_enum_presets(const std::wstring & encoder)
+{
 	std::wcout << L"Presets for '" << encoder << L"':" << std::endl;
 
 	obs_properties_t *props = obs_get_encoder_properties(wstring_to_utf8(encoder).c_str());
@@ -149,7 +155,8 @@ void print_obs_enum_presets(const std::wstring & encoder) {
 	obs_properties_destroy(props);
 }
 
-void print_obs_enum_profiles(const std::wstring & encoder) {
+void print_obs_enum_profiles(const std::wstring & encoder)
+{
 	std::wcout << L"Profiles for '" << encoder << L"':" << std::endl;
 
 	obs_properties_t *props = obs_get_encoder_properties(wstring_to_utf8(encoder).c_str());

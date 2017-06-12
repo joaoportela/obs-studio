@@ -15,20 +15,20 @@
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	******************************************************************************/
 
-#include<iostream>
-#include<string>
-#include<memory>
+#include <iostream>
+#include <string>
+#include <memory>
 
-#include<boost/program_options.hpp>
+#include <boost/program_options.hpp>
 
-#include<obs.h>
-#include<obs.hpp>
-#include<util/platform.h>
+#include <obs.h>
+#include <obs.hpp>
+#include <util/platform.h>
 
-#include"enum_types.hpp"
-#include"monitor_info.hpp"
-#include"setup_obs.hpp"
-#include"event_loop.hpp"
+#include "enum_types.hpp"
+#include "monitor_info.hpp"
+#include "setup_obs.hpp"
+#include "event_loop.hpp"
 #include "string_conversions.hpp"
 
 #define do_log(level, format, ...) \
@@ -92,7 +92,8 @@ namespace {
 *
 *   Calls obs_reset_video internally. Assumes some video options.
 */
-void reset_video(int monitor_index, int fps) {
+void reset_video(int monitor_index, int fps)
+{
 	struct obs_video_info ovi;
 
 	ovi.fps_num = fps;
@@ -122,7 +123,8 @@ void reset_video(int monitor_index, int fps) {
 *
 *   Calls obs_reset_audio internally. Assumes some audio options.
 */
-void reset_audio() {
+void reset_audio()
+{
 	struct obs_audio_info ai;
 	ai.samples_per_sec = 44100;
 	ai.speakers = SPEAKERS_STEREO;
@@ -137,7 +139,8 @@ void reset_audio() {
 *
 *   Calls obs_output_stop(output) internally.
 */
-void stop_recording(std::vector<OBSOutput> outputs){
+void stop_recording(std::vector<OBSOutput> outputs)
+{
 
 	for (auto output : outputs) {
 		obs_output_stop(output);
@@ -148,7 +151,8 @@ void stop_recording(std::vector<OBSOutput> outputs){
 *
 *   Calls obs_output_start(output) internally.
 */
-bool start_recording(std::vector<OBSOutput> outputs) {
+bool start_recording(std::vector<OBSOutput> outputs)
+{
 	int outputs_started = 0;
 	for (auto output : outputs) {
 		bool success = obs_output_start(output);
@@ -166,7 +170,8 @@ bool start_recording(std::vector<OBSOutput> outputs) {
 	}
 }
 
-bool should_print_lists() {
+bool should_print_lists()
+{
 	return cli_options.list_monitors
 		|| cli_options.list_audios
 		|| cli_options.list_encoders
@@ -177,7 +182,8 @@ bool should_print_lists() {
 		;
 }
 
-bool do_print_lists() {
+bool do_print_lists()
+{
 	if (cli_options.list_monitors) {
 		print_monitors_info();
 	}
@@ -204,7 +210,8 @@ bool do_print_lists() {
 }
 
 
-int parse_args(int argc, char **argv) {
+int parse_args(int argc, char **argv)
+{
 	// print args to log
 	std::ostringstream args;
 	for (int i = 0; i < argc; i++)
@@ -280,13 +287,15 @@ int parse_args(int argc, char **argv) {
 	return Ret::success;
 }
 
-void start_output_callback(void * /*data*/, calldata_t *params) {
+void start_output_callback(void * /*data*/, calldata_t *params)
+{
 	// auto loop = static_cast<EventLoop*>(data);
 	auto output = static_cast<obs_output_t*>(calldata_ptr(params, "output"));
 	blog(LOG_INFO, "Output '%s' started.", obs_output_get_name(output));
 }
 
-void stop_output_callback(void *data, calldata_t *params) {
+void stop_output_callback(void *data, calldata_t *params)
+{
 	auto loop = static_cast<EventLoop*>(data);
 	auto output = static_cast<obs_output_t*>(calldata_ptr(params, "output"));
 	long long code = calldata_int(params, "code");
@@ -297,7 +306,8 @@ void stop_output_callback(void *data, calldata_t *params) {
 	loop->stop();
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
 	try {
 		int ret = parse_args(argc, argv);
 		if (ret != Ret::success)
