@@ -1,13 +1,15 @@
-#include"event_loop.hpp"
+#include "event_loop.hpp"
 
-#include<iostream>
-#include<thread>
+#include <iostream>
+#include <thread>
 
-EventLoop::EventLoop() {
+EventLoop::EventLoop()
+{
 }
 
 namespace {
-	void background_io(EventLoop* el, bool* event_loop_is_valid) {
+	void background_io(EventLoop* el, bool* event_loop_is_valid)
+	{
 		while (true) {
 			// wait for user orders to stop recording.
 			std::cout << "press q<enter> to stop recording." << std::endl;
@@ -22,7 +24,8 @@ namespace {
 	}
 }
 
-void EventLoop::run() {
+void EventLoop::run()
+{
 	// this variable will leak but we cannot clean it up correctly yet.
 	bool* event_loop_is_valid = new bool(true);
 	// launch background thread, will also leak.
@@ -36,6 +39,7 @@ void EventLoop::run() {
 	*event_loop_is_valid = false;
 }
 
-void EventLoop::stop() {
+void EventLoop::stop()
+{
 	stop_condition.notify_all();
 }

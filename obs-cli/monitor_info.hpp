@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include<vector>
+#include <vector>
 
 struct MonitorInfo {
 	// same value as its index in all_monitors list.

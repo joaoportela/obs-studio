@@ -1,6 +1,6 @@
 #include "setup_obs.hpp"
 
-#include<boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 #include "string_conversions.hpp"
 
@@ -22,10 +22,11 @@
 #define OUTPUT_AUDIO_SOURCE L"pulse_output_capture"
 #endif
 
-#include<iostream>
+#include <iostream>
 
 namespace {
-	int find_monitor_idx(MonitorInfo monitor) {
+	int find_monitor_idx(MonitorInfo monitor)
+	{
 		// find matching monitor index for capture module that is used.
 		// this is an hack and may break with different versions of the
 		// "monitor_capture" module.
@@ -59,7 +60,8 @@ namespace {
 	}
 }
 
-OBSSource setup_video_input(MonitorInfo monitor) {
+OBSSource setup_video_input(MonitorInfo monitor)
+{
 	int monitor_idx = find_monitor_idx(monitor);
 
 	std::string name("monitor " + std::to_string(monitor_idx) + " capture");
@@ -80,7 +82,8 @@ OBSSource setup_video_input(MonitorInfo monitor) {
 	return source;
 }
 
-std::wstring search_audio_device_by_type(std::wstring* audio_device, std::wstring* device_type){
+std::wstring search_audio_device_by_type(std::wstring* audio_device, std::wstring* device_type)
+{
 
 	std::string device_id;
 	obs_properties_t* props = obs_get_source_properties(wstring_to_utf8(*device_type).c_str());
@@ -121,7 +124,8 @@ std::wstring search_audio_device_by_type(std::wstring* audio_device, std::wstrin
 	return utf8_to_wstring(device_id);
 }
 
-void search_audio_device_by_name(std::wstring audio_device, std::wstring* device_id, std::wstring* device_type){
+void search_audio_device_by_name(std::wstring audio_device, std::wstring* device_id, std::wstring* device_type)
+{
 	//std::string device_id;
 	std::wstring st = std::wstring(INPUT_AUDIO_SOURCE);
 	*device_type = st;
@@ -135,8 +139,9 @@ void search_audio_device_by_name(std::wstring audio_device, std::wstring* device
 	*device_id = search_audio_device_by_type(&audio_device, device_type);
 	return;
 }
-OBSSource setup_audio_input(std::wstring audio_device) {
 
+OBSSource setup_audio_input(std::wstring audio_device)
+{
 	std::wstring device_id;
 	std::wstring device_type;
 
@@ -167,7 +172,8 @@ Outputs setup_outputs(std::wstring video_encoder_id,
 	std::wstring profile,
 	int video_bitrate,
 	int video_cqp,
-	std::vector<std::wstring> output_paths) {
+	std::vector<std::wstring> output_paths)
+{
 	OBSEncoder video_encoder = obs_video_encoder_create(wstring_to_utf8(video_encoder_id).c_str(), "video_encoder", nullptr, nullptr);
 	obs_encoder_release(video_encoder);
 	obs_encoder_set_video(video_encoder, obs_get_video());
@@ -224,4 +230,3 @@ Outputs setup_outputs(std::wstring video_encoder_id,
 	out.outputs = outputs;
 	return out;
 }
-

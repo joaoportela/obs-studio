@@ -19,9 +19,9 @@
 
 #pragma once
 
-#include<vector>
-#include<string>
-#include<obs.hpp>
+#include <vector>
+#include <string>
+#include <obs.hpp>
 
 #include "monitor_info.hpp"
 
