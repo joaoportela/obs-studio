@@ -1,8 +1,9 @@
 #include "enum_types.hpp"
-#include "string_conversions.hpp"
 
 #include <obs.hpp>
 #include <iostream>
+
+#include "string_conversions.hpp"
 
 void print_obs_enum_input_types()
 {

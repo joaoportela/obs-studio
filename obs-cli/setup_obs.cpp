@@ -1,5 +1,6 @@
 #include "setup_obs.hpp"
 
+#include <iostream>
 #include <boost/algorithm/string/predicate.hpp>
 
 #include "string_conversions.hpp"
@@ -21,8 +22,6 @@
 #define INPUT_AUDIO_SOURCE  L"pulse_input_capture"
 #define OUTPUT_AUDIO_SOURCE L"pulse_output_capture"
 #endif
-
-#include <iostream>
 
 namespace {
 	int find_monitor_idx(MonitorInfo monitor)
