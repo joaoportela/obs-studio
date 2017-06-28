@@ -70,14 +70,14 @@ void print_obs_enum_output_types()
 }
 
 #ifdef __APPLE__
-#define INPUT_AUDIO_SOURCE  L"coreaudio_input_capture"
-#define OUTPUT_AUDIO_SOURCE L"coreaudio_output_capture"
+#define INPUT_AUDIO_SOURCE  "coreaudio_input_capture"
+#define OUTPUT_AUDIO_SOURCE "coreaudio_output_capture"
 #elif _WIN32
-#define INPUT_AUDIO_SOURCE  L"wasapi_input_capture"
-#define OUTPUT_AUDIO_SOURCE L"wasapi_output_capture"
+#define INPUT_AUDIO_SOURCE  "wasapi_input_capture"
+#define OUTPUT_AUDIO_SOURCE "wasapi_output_capture"
 #else
-#define INPUT_AUDIO_SOURCE  L"pulse_input_capture"
-#define OUTPUT_AUDIO_SOURCE L"pulse_output_capture"
+#define INPUT_AUDIO_SOURCE  "pulse_input_capture"
+#define OUTPUT_AUDIO_SOURCE "pulse_output_capture"
 #endif
 
 void print_obs_enum_audio_type(obs_properties_t* props)
